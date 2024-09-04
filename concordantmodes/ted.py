@@ -21,11 +21,11 @@ class TED(object):
             proj_buff = self.proj[0]
             for i in range(len(self.proj) - 1):
                 proj_buff = np.append(proj_buff, self.proj[i + 1], axis=1)
-            print(proj_buff)
-            raise RuntimeError
         if rect_print:
             proj_eigs = np.dot(self.proj, proj_eigs)
         proj_eigs_inv = LA.pinv(proj_eigs)
+        print("The eigenvectors (check these for phase):")
+        print(proj_eigs)
         self.TED = np.multiply(proj_eigs, proj_eigs_inv.T) * 100
         self.ted_breakdown = self.TED
         self.table_print(freq, self.TED, rect_print)

@@ -76,6 +76,7 @@ class TransfDisp(object):
             ] = 0
 
         # Compute the A-matrix to convert from normal coordinates to cartesians
+        
         self.A = self.compute_A(
             self.s_vectors.B.copy(), self.ted.proj, self.eig_inv, self.zmat.mass_weight
         )
@@ -100,7 +101,6 @@ class TransfDisp(object):
             # reduced displacements
             if self.options.reduced_disp and len(fc):
                 disp_size = self.options.reduced_disp_size
-                print(disp_size)
                 for i in range(len(self.disp)):
                     self.disp[i] = disp_size / np.abs(fc[i, i]) ** 0.25
                 print("Reduced displacements")
@@ -471,20 +471,47 @@ class TransfDisp(object):
                 )
                 raise RuntimeError
         elif self.coord_type == "cartesian":
-            p_disp = np.zeros(len(self.ref_carts.flatten()), dtype=object)
-            m_disp = np.zeros(len(self.ref_carts.flatten()), dtype=object)
-            print("THIS IS THE DISP SIZE")
-            print(self.disp)
-            for i in range(len(self.ref_carts.flatten())):
-                p_disp[i] = self.ref_carts.flatten().copy()
-                m_disp[i] = self.ref_carts.flatten().copy()
-                p_disp[i][i] = p_disp[i][i] + self.disp
-                m_disp[i][i] = m_disp[i][i] - self.disp
-                p_disp[i] = np.reshape(p_disp[i], (-1, 3))
-                m_disp[i] = np.reshape(m_disp[i], (-1, 3))
+            if self.deriv_level == 1:
+                p_disp = np.zeros(len(self.ref_carts.flatten()), dtype=object)
+                m_disp = np.zeros(len(self.ref_carts.flatten()), dtype=object)
+                # print("THIS IS THE DISP SIZE")
+                # print(self.disp)
+                for i in range(len(self.ref_carts.flatten())):
+                    p_disp[i] = self.ref_carts.flatten().copy()
+                    m_disp[i] = self.ref_carts.flatten().copy()
+                    p_disp[i][i] = p_disp[i][i] + self.disp
+                    m_disp[i][i] = m_disp[i][i] - self.disp
+                    p_disp[i] = np.reshape(p_disp[i], (-1, 3))
+                    m_disp[i] = np.reshape(m_disp[i], (-1, 3))
 
-            self.p_disp = p_disp
-            self.m_disp = m_disp
+                self.p_disp = p_disp
+                self.m_disp = m_disp
+            elif not self.deriv_level:
+                p_disp = np.zeros((len(self.ref_carts.flatten()),len(self.ref_carts.flatten())), dtype=object)
+                m_disp = np.zeros((len(self.ref_carts.flatten()),len(self.ref_carts.flatten())), dtype=object)
+                # print("THIS IS THE DISP SIZE")
+                # print(self.disp)
+                for index in self.indices:
+                    i, j = index[0], index[1]
+                    if i == j:
+                        p_disp[i,i] = self.ref_carts.flatten().copy()
+                        m_disp[i,i] = self.ref_carts.flatten().copy()
+                        p_disp[i,i][i] += self.disp
+                        m_disp[i,i][i] -= self.disp
+                        p_disp[i,i] = np.reshape(p_disp[i,i], (-1, 3))
+                        m_disp[i,i] = np.reshape(m_disp[i,i], (-1, 3))
+                    else:
+                        p_disp[i,j] = self.ref_carts.flatten().copy()
+                        m_disp[i,j] = self.ref_carts.flatten().copy()
+                        p_disp[i,j][i] += self.disp
+                        p_disp[i,j][j] += self.disp
+                        m_disp[i,j][i] -= self.disp
+                        m_disp[i,j][j] -= self.disp
+                        p_disp[i,j] = np.reshape(p_disp[i,j], (-1, 3))
+                        m_disp[i,j] = np.reshape(m_disp[i,j], (-1, 3))
+
+                self.p_disp = p_disp
+                self.m_disp = m_disp
 
         else:
             print(

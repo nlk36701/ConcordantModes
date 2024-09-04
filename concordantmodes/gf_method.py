@@ -11,7 +11,7 @@ class GFMethod(object):
     TODO: Insert standard uncertainties of amu_elmass and HARTREE_WAVENUM
     """
 
-    def __init__(self, G, F, tol, proj_tol, zmat, ted, cma=None):
+    def __init__(self, G, F, tol, proj_tol, zmat, ted, cma=None, sym_sort=[]):
         self.G = G
         self.F = F
         self.tol = tol
@@ -35,11 +35,6 @@ class GFMethod(object):
         L = np.absolute(self.L)
         L_p = np.real(self.L_p)
         self.L_p = L_p
-        # Construct the normal mode overlap matrix. Will be useful for off-diagonal diagnostics.
-        L = np.absolute(np.real(self.L))
-        L_inv = LA.inv(L)
-        S = np.dot(L.T, L)
-        self.S = S
 
         self.L[np.abs(self.L) < self.tol] = 0
         # Compute the frequencies by the square root of the eigenvalues.

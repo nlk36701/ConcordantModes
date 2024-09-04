@@ -53,37 +53,22 @@ class FcConv(object):
                 # Note: I may want to use projected A_T to reduce the size of the
                 # internal coordinate basis, thus speeding up the computation.
                 # The basis will eventually need to be projected anyways.
-                # print("grad:")
-                # print(grad.shape)
-                # print(grad)
-                # print("AT:")
-                # print(self.A_T.shape)
-                # print(self.A_T)
-                v_q = np.dot(self.A_T, grad)
-                # print("v_q:")
-                # print(v_q.shape)
-                # print(v_q)
-                # print("B2:")
-                # print(self.s_vec.B2.shape)
-                # print(self.s_vec.B2)
+                np.set_printoptions(precision=6, linewidth=240)
+                self.v_q = np.dot(self.A_T, grad)
                 C2 = np.einsum("rij,pi,qj->rpq", self.s_vec.B2, self.A_T, self.A_T)
-                # print("C2:")
-                # print(C2.shape)
-                # print(C2)
-                V2 = np.einsum("q,qpr->pr", v_q, C2)
+                V2 = np.einsum("q,qpr->pr", self.v_q, C2)
 
             self.F = self.F - V2
 
             if self.print_f:
-                self.N = len(G)
                 self.print_const()
         elif self.coord.lower() == "cartesian":
             self.F = np.einsum("pi,rj,pr->ij", self.s_vec.B, self.s_vec.B, self.F)
             if self.print_f:
-                self.N = len(self.zmat.atom_list) * 3
                 self.print_const()
 
     def print_const(self, fc_name="fcFinal.dat"):
+        self.N = len(self.F)
         fc_output = ""
         fc_output += "{:5d}{:5d}\n".format(len(self.zmat.atom_list), self.N)
         print("print_const has run")

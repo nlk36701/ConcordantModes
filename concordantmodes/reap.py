@@ -42,6 +42,9 @@ class Reap(object):
         else:
             size = len(eigs)
 
+        if self.options.second_order:
+            size = self.indices[-1][0] + 1
+        
         if not self.deriv_level:
             if not self.anharm:
                 print(
@@ -97,6 +100,8 @@ class Reap(object):
                         p_en_array[i, j] = energy = self.reap_energies(
                             direc, success_regex, energy_regex, True
                         )
+                        print("p_en")
+                        print(energy)
                         rel = energy - ref_en
                         print(
                             "Relative plus  "
@@ -114,6 +119,8 @@ class Reap(object):
                         m_en_array[i, j] = energy = self.reap_energies(
                             direc + 1, success_regex, energy_regex, True
                         )
+                        print("m_en")
+                        print(energy)
                         rel = energy - ref_en
                         print(
                             "Relative minus "
@@ -140,9 +147,13 @@ class Reap(object):
                         p_en_array[i, j] = self.reap_energies(
                             direc, success_regex, energy_regex, False
                         )
+                        print("p_en")
+                        print(p_en_array[i, j])
                         m_en_array[i, j] = energy = self.reap_energies(
                             direc + 1, success_regex, energy_regex, False
                         )
+                        print("m_en")
+                        print(m_en_array[i, j])
                         direc += 2
 
                 self.p_en_array = p_en_array
@@ -319,6 +330,7 @@ class Reap(object):
     def reap_energies(self, direc, success_regex, energy_regex, diag):
         if self.options.dir_reap:
             os.chdir("./" + str(direc))
+            # print(os.getcwd())
             with open("output.dat", "r") as file:
                 data = file.read()
             if not re.search(success_regex, data):

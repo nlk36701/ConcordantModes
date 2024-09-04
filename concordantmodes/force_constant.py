@@ -32,6 +32,7 @@ class ForceConstant(object):
         anharm_indices=[],
         p_anharm=[],
         m_anharm=[],
+        coord_type_init="internal",
     ):
         self.options = options
         self.disp = disp
@@ -44,10 +45,17 @@ class ForceConstant(object):
         self.anharm_indices = anharm_indices
         self.p_anharm = p_anharm
         self.m_anharm = m_anharm
+        self.coord_type_init = coord_type_init
 
     def run(self):
         indices = self.indices
         disp = self.disp
+        if self.coord_type_init == "cartesian":
+            size = self.indices[-1][0] + 1
+            cart_disp = np.zeros(size)
+            for i in range(len(cart_disp)):
+                cart_disp[i] = disp.disp
+            disp.disp = cart_disp
         dim = self.p_array.shape[0]
         self.FC = np.zeros((dim, dim))
         if not self.deriv_level:

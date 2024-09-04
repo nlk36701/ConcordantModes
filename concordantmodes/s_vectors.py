@@ -778,6 +778,7 @@ class SVectors(object):
             self.options,
             np.arange(len(self.B)),
             coord_type="cartesian",
+            deriv_level=1,
         )
 
         B_disp.run()

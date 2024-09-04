@@ -80,10 +80,6 @@ class ConcordantModes(object):
                 second_order=self.options.second_order,
             )
         self.TED_obj = TED(s_vec.proj, self.zmat_obj)
-        print(s_vec.proj.shape)
-        print(s_vec.proj)
-        print(self.TED_obj.proj.shape)
-        print(self.TED_obj.proj)
 
         # Print out the percentage composition of the projected coordinates
         if self.options.coords != "ZMAT":
@@ -98,9 +94,9 @@ class ConcordantModes(object):
         G = g_mat.G.copy()
 
         if os.path.exists(rootdir + "/fc.grad"):
-            print("HERE")
             g_read_obj = GrRead("fc.grad")
             g_read_obj.run(self.zmat_obj.cartesians_init)
+            print(self.zmat_obj.cartesians_init)
 
         # Read in FC matrix in cartesians, then convert to internals.
         # Or compute an initial hessian in internal coordinates.
@@ -111,15 +107,21 @@ class ConcordantModes(object):
             f_read_obj = FcRead("FCMFINAL")
         else:
             self.options.init_bool = True
+            
 
             # First generate displacements in internal coordinates
             eigs_init = np.eye(len(s_vec.proj.T))
+            # raise RuntimeError
+            coord_type = "internal"
+            if self.options.cart_fc_init:
+                eigs_init = np.eye(len(self.zmat_obj.cartesians_init.flatten()))
+                coord_type = "cartesian"
             if not self.options.deriv_level_init:
-                indices = np.triu_indices(len(s_vec.proj.T))
+                indices = np.triu_indices(len(eigs_init))
                 indices = np.array(indices).T
             else:
                 indices = np.arange(len(eigs_init))
-
+            
             init_disp = TransfDisp(
                 s_vec,
                 self.zmat_obj,
@@ -130,6 +132,7 @@ class ConcordantModes(object):
                 self.TED_obj,
                 self.options,
                 indices,
+                coord_type=coord_type,
                 deriv_level=self.options.deriv_level_init,
             )
             init_disp.run()
@@ -287,23 +290,17 @@ class ConcordantModes(object):
         else:
             F = fc_init.FC
 
-        # f_conv_obj.N = len(g_mat.G)
-        # f_conv_obj.print_const(fc_name="fc_int.dat")
-        # print("F and then G:")
-        # print(F)
-        # print(g_mat.G)
-
         if self.options.coords != "ZMAT" and not self.options.init_bool:
             F = np.dot(self.TED_obj.proj.T, np.dot(F, self.TED_obj.proj))
         if self.options.coords != "ZMAT":
             g_mat.G = np.dot(self.TED_obj.proj.T, np.dot(g_mat.G, self.TED_obj.proj))
 
         self.options.init_bool = False
-        print("F and then G:")
+        # print("F and then G:")
         F[np.abs(F) < self.options.tol] = 0
         g_mat.G[np.abs(g_mat.G) < self.options.tol] = 0
-        print(F)
-        print(g_mat.G / (5.48579909065 * (10 ** (-4))))
+        # print(F)
+        # print(g_mat.G / (5.48579909065 * (10 ** (-4))))
 
         # Run the GF matrix method with the internal F-Matrix and computed G-Matrix!
         print("Initial Frequencies:")
@@ -363,8 +360,6 @@ class ConcordantModes(object):
                     del_array = np.append(del_array, i)
             offdiag_indices = np.delete(offdiag_indices, del_array.astype(int), axis=0)
             algo.indices = np.append(algo.indices, offdiag_indices, axis=0)
-            print(algo.indices)
-            # print(offdiag_indices)
 
             # raise RuntimeError
         # Recompute the B-Tensors to match the final geometry,
@@ -437,8 +432,8 @@ class ConcordantModes(object):
             disp_list = []
             for i in os.listdir(rootdir + "/Disps"):
                 disp_list.append(i)
-            print("printing disp list")
-            print(disp_list)
+            # print("printing disp list")
+            # print(disp_list)
 
             # Generates the submit script for the displacements.
             if self.options.cluster != "sapelo":
@@ -471,7 +466,7 @@ class ConcordantModes(object):
 
         # After this point, all of the jobs have finished, and it's time
         # to reap the energies as well as checking for sucesses
-        print(eigs)
+        # print(eigs)
         reap_obj = Reap(
             # progname,
             # self.zmat_obj,

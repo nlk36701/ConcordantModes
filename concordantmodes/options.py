@@ -7,6 +7,7 @@ class Options(object):
         self.calc = kwargs.pop("calc", True)
         self.calc_anharm_init = kwargs.pop("calc_anharm_init", True)
         self.cart_coords = kwargs.pop("cart_coords", "Bohr")
+        self.cart_fc_init = kwargs.pop("cart_fc_init", False)
         self.calc_init = kwargs.pop("calc_init", True)
         self.cart_insert = kwargs.pop("cart_insert", -1)
         self.cart_insert_init = kwargs.pop("cart_insert_init", -1)
